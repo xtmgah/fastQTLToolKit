@@ -1,0 +1,273 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Fastqtltoolkit by swvanderlaan</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Fastqtltoolkit</h1>
+        <p>fastQTL analysis of methylation and expression data</p>
+
+        <p class="view"><a href="https://github.com/swvanderlaan/fastQTLToolKit">View the Project on GitHub <small>swvanderlaan/fastQTLToolKit</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/swvanderlaan/fastQTLToolKit/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/swvanderlaan/fastQTLToolKit/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/swvanderlaan/fastQTLToolKit">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="fastqtltoolkit" class="anchor" href="#fastqtltoolkit" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>fastQTLToolKit</h1>
+
+<p>This repository contains various scripts in BASH and Python scripts for genetic analyses of (genome-wide) methylation and expression data ('quantitative trait locus', QTL analyses) of the Athero-Express Genomics Studies 1 and 2 (AEGS) or CTMM Genomics Study (CTMM). AEGS contains methylation data using the Illumina Human Methylation 450K BeadChip from carotid plaques (n = 444). CTMM contains expression data using the Illumina Human HT12 v4r2 BeadChip from monocytes (n = 308). AEGS1 was genotyped using Affymetrix SNP 5.0, AEGS2 using Affymetrix Axiom CEU, and CTMM using Affyemtrix Axiom TX (a custom version of the 'Biobank'-chip). Both AEGS and CTMM were imputed using 1000G phase 3 version 5 and GoNL5 as a reference.</p>
+
+<p>All scripts are annotated for debugging purposes - and future reference. Scripts will work within the context of a certain Linux environment (in this case a CentOS7 system on a SUN Grid Engine background). </p>
+
+<p>The installation procedure is quite straightforward, and only entails two steps consisting of command one-liners that are <em>easy</em> to read. You can copy/paste each example command, per block of code. For some steps you need administrator privileges. Follow the steps in consecutive order.</p>
+
+<pre><code>these `mono-type font` illustrate commands illustrate terminal commands. You can copy &amp; paste these.
+</code></pre>
+
+<p>To make it easier to copy and paste, long commands that stretch over multiple lines are structered as follows:</p>
+
+<pre><code>Multiline commands end with a dash \
+    indent 4 spaces, and continue on the next line. \
+    Copy &amp; paste these whole blocks of code.
+</code></pre>
+
+<p>Although we made it easy to just select, copy and paste and run these blocks of code, it is not a good practise to blindly copy and paste commands. Try to be aware about what you are doing. And never, never run <code>sudo</code> commands without a good reason to do so. </p>
+
+<p>We have tested fastQTLToolKit on CentOS7, OS X El Capitan (version 10.11.[x]), and macOS Sierra (version 10.12.[x]). </p>
+
+<hr>
+
+<h4>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Requirements</h4>
+
+<p><strong><em>For R</em></strong> -- These libraries and their dependencies are needed for the R-script to work.</p>
+
+<ul>
+<li>"optparse"</li>
+<li>"tools"</li>
+<li>"qvalue"</li>
+</ul>
+
+<p><strong><em>QCTOOL</em></strong> -- Needed for the extraction and conversion of required genotype data. Required: v1.5.</p>
+
+<p><strong><em>SNPTEST</em></strong> -- Needed for the calculation of summary statistics of the extracted genotype data. Required: v2.5.2.</p>
+
+<p><strong><em>fastQTL</em></strong> -- Needed to run fastQTL. Required: v2.184.</p>
+
+<p><strong><em>LocusZoom</em></strong> -- Needed to generate LocusZoom plots. Required: v1.3.</p>
+
+<p><strong><em>BGZip</em></strong> -- Needed for VCF conversion and gzipping. Required: as part of the htslib-1.3 package.</p>
+
+<p><strong><em>Tabix</em></strong> -- Needed for VCF indexing. Required: as part of the htslib-1.3 package.</p>
+
+<h4>
+<a id="note-the-above-scripts-tools-and-software-are-all-installed-on-our-local-system" class="anchor" href="#note-the-above-scripts-tools-and-software-are-all-installed-on-our-local-system" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>NOTE: the above scripts, tools, and software are all installed on our local system.</em>
+</h4>
+
+<hr>
+
+<h4>
+<a id="installing-the-scripts-locally" class="anchor" href="#installing-the-scripts-locally" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installing the scripts locally</h4>
+
+<p>You can use the scripts locally to run analyses on a Unix-based system, like Mac OS X (Mountain Lion+). We need to make an appropriate directory to download 'gits' to, and install this 'git'.</p>
+
+<h5>
+<a id="step-1-make-a-directory-and-go-there" class="anchor" href="#step-1-make-a-directory-and-go-there" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1: make a directory, and go there.</h5>
+
+<pre><code>mkdir -p ~/git/ &amp;&amp; cd ~/git
+</code></pre>
+
+<h5>
+<a id="step-2-clone-this-git-unless-it-already-exists" class="anchor" href="#step-2-clone-this-git-unless-it-already-exists" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2: clone this git, unless it already exists.</h5>
+
+<pre><code>if [ -d ~/git/GWASToolKit/.git ]; then \
+        cd ~/git/GWASToolKit &amp;&amp; git pull; \
+    else \
+        cd ~/git/ &amp;&amp; git clone https://github.com/swvanderlaan/fastQTLToolKit.git; \
+    fi
+</code></pre>
+
+<hr>
+
+<h4>
+<a id="quantitative-trait-locus-analyses" class="anchor" href="#quantitative-trait-locus-analyses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Quantitative Trait Locus analyses</h4>
+
+<p>You can select the type of analysis by providing the following <em>obligatory</em> 10 arguments. Some relevant statistics, such as HWE, minor allele count (MAC), and coded allele frequency (CAF) will be added to the final summarized result. LocusZoom style figures will be made automatically for <em>eQTL-analyses</em> alone. </p>
+
+<ul>
+<li>
+<strong><em>Argument #1</em></strong> -- indicate which study type you want to analyze, so either [AEMS450K1/AEMS450K2/CTMM]:
+
+<ul>
+<li>
+<strong><em>AEMS450K1</em></strong> -- methylation quantitative trait locus (mQTL) analysis on plaques or blood in the Athero-Express Methylation Study 450K phase 1.</li>
+<li>
+<strong><em>AEMS450K2</em></strong> -- mQTL analysis on plaques or blood in the Athero-Express Methylation Study 450K phase 2 [NOTE: this is not yet available.].</li>
+<li>
+<strong><em>CTMM</em></strong> -- expression QTL (eQTL) analysis in monocytes from CTMM.</li>
+</ul>
+</li>
+<li>
+<strong><em>Argument #2</em></strong> -- the sample type must be [AEMS450K1: PLAQUES/BLOOD], [AEMS450K2: PLAQUES], or [CTMM: MONOCYTES].</li>
+<li>
+<strong><em>Argument #3</em></strong> -- the root directory, e.g. /server/folderX/folderY/folderZ/someqtlanalysis.</li>
+<li>
+<strong><em>Argument #4</em></strong> -- where you want stuff to be save inside the rootdir,  e.g. mqtl_aems450k1</li>
+<li>
+<strong><em>Argument #5</em></strong> -- project name, e.g. 'CAD'.</li>
+<li>
+<strong><em>Argument #6</em></strong> -- text file with on each line the regions of interest, refer to example files.</li>
+<li>
+<strong><em>Argument #7</em></strong> -- the type of exclusion to apply:
+
+<ul>
+<li>
+<strong><em>AEMS/CTMM</em></strong> -- DEFAULT/SMOKER/NONSMOKER/MALES/FEMALES/T2D/NONT2D</li>
+<li>
+<strong><em>AEMS-specific</em></strong> -- CKD/NONCKD/PRE2007/POST2007/NONAEGS/NONAEGSFEMALES/NONAEGSMALES.</li>
+</ul>
+</li>
+<li>
+<strong><em>Argument #8</em></strong> -- text file with excluded covariates, refer to example file.</li>
+<li>
+<strong><em>Argument #9</em></strong> -- qsub e-mail address, e.g. <a href="mailto:yourname@mailadres.com">yourname@mailadres.com</a>.</li>
+<li>
+<strong><em>Argument #10</em></strong> -- qsub mail settings, e.g. 'beas' - refer to qsub manual.</li>
+</ul>
+
+<hr>
+
+<h4>
+<a id="exclusion-options" class="anchor" href="#exclusion-options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exclusion options</h4>
+
+<h4>
+<a id="ctmmaegs" class="anchor" href="#ctmmaegs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>CTMM/AEGS</em>
+</h4>
+
+<ul>
+<li>
+<strong><em>DEFAULT</em></strong> -- include all CTMM or AEGS samples (note: <em>only</em> carotid endartectomy [CEA] patients are considered for AEGS).</li>
+<li>
+<strong><em>SMOKER</em></strong> -- include only individuals with 'current smoking' status = 'yes'.</li>
+<li>
+<strong><em>NONSMOKER</em></strong> -- include only individuals with 'current smoking' status = 'no'.</li>
+<li>
+<strong><em>MALES</em></strong> -- include only 'female' individuals (exclude 'males').</li>
+<li>
+<strong><em>FEMALES</em></strong> -- include only 'male' individuals (exclude 'females').</li>
+<li>
+<strong><em>T2D</em></strong> -- include only individuals <em>with</em> 'type 2 diabetes' based on diagnosis and/or medication use.</li>
+<li>
+<strong><em>NONT2D</em></strong> -- include only individuals <em>without</em> 'type 2 diabetes' based on diagnosis and/or medication use.</li>
+</ul>
+
+<h4>
+<a id="aegs-specific" class="anchor" href="#aegs-specific" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>AEGS specific</em>
+</h4>
+
+<ul>
+<li>
+<strong><em>CKD</em></strong> -- include only individuals <em>with</em> 'chronic kidney disease' (CKD&gt;2) based on eGFR (using creatinine) using KDOQI criteria.</li>
+<li>
+<strong><em>NONCKD</em></strong> -- include only individuals <em>without</em> 'chronic kidney disease' (CKD&gt;2) based on eGFR (using creatinine) using KDOQI criteria.</li>
+<li>
+<strong><em>PRE2007</em></strong> -- include only individuals operated <em>before</em> 2007.</li>
+<li>
+<strong><em>POST2007</em></strong> -- include only individuals operated <em>after</em> 2007.</li>
+<li>
+<strong><em>NONAEGS</em></strong> -- include all also non-CEA individuals.</li>
+<li>
+<strong><em>NONAEGSMALES</em></strong> -- include all also non-CEA individuals, but only 'female' individuals (exclude 'males').</li>
+<li>
+<strong><em>NONAEGSFEMALES</em></strong> -- include all also non-CEA individuals, but only 'male' individuals (exclude 'females').</li>
+</ul>
+
+<hr>
+
+<h4>
+<a id="file-descriptions" class="anchor" href="#file-descriptions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>File descriptions</h4>
+
+<ul>
+<li>
+<strong><em>excl_cov_eqtl.txt</em></strong> -- list of covariates that should be excluded from analysis (for CTMM analysis).</li>
+<li>
+<strong><em>excl_cov_sex_eqtl.txt</em></strong> -- list of covariates that should be excluded from analysis, when running sex-stratified analyses (for CTMM analysis).</li>
+<li>
+<strong><em>excl_cov.txt</em></strong> -- list of covariates that should be excluded from analysis (for AEGS analysis).</li>
+<li>
+<strong><em>excl_cov_sex.txt</em></strong> -- list of covariates that should be excluded from analysis, when running sex-stratified analyses (for AEGS analysis).</li>
+<li>
+<strong><em>regions_for_qtl.small.txt</em></strong> -- example list of regions (short list).</li>
+<li>
+<strong><em>regions_for_qtl.txt</em></strong> -- example list of regions.</li>
+<li>
+<strong><em>fastQTLAnalyzer.sh</em></strong> -- Main analysis-script.</li>
+<li>
+<strong><em>fastQTLChecker.sh</em></strong> -- Script that checks the analysis output.</li>
+<li>
+<strong><em>fastQTLSummarizer.sh</em></strong> -- Script that summarizes the fastQTL analysis results.</li>
+<li>
+<strong><em>fastQTL_QC.R</em></strong> -- R script that does some parsing of results and QC, as well as generating some QC plots.</li>
+<li>
+<strong><em>NominalResultsParser.py</em></strong> -- Script need to parse the nominal results data to obtain per-locus lists of number of variants, transcripts, and the LocusZoom input file.</li>
+<li>
+<strong><em>fastQTLPlotter.sh</em></strong> -- Script that generates per transcript (!) for each gene and locus a LocusZoom style plot (CTMM analysis only!).</li>
+<li>
+<strong><em>parse_clumps_eqtl.pl</em></strong> -- Clumps results per locus -- NOTE: BETA-version; not used yet.</li>
+</ul>
+
+<h4>
+<a id="note-at-the-moment-these-scripts-are-changing-frequently-but-for-most-analyses-it-should-work-please-contact-me-for-support" class="anchor" href="#note-at-the-moment-these-scripts-are-changing-frequently-but-for-most-analyses-it-should-work-please-contact-me-for-support" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>NOTE: at the moment these scripts are changing frequently, but for most analyses it should work. Please contact me for support.</em>
+</h4>
+
+<hr>
+
+<h4>
+<a id="roadmap" class="anchor" href="#roadmap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Roadmap</h4>
+
+<ul>
+<li>update NominalResultsParser for mQTL analyses.</li>
+<li>generate regional plots for mQTL analyses.</li>
+</ul>
+
+<hr>
+
+<h4>
+<a id="the-mit-license-mit" class="anchor" href="#the-mit-license-mit" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The MIT License (MIT)</h4>
+
+<h4>
+<a id="copyright-c-2015-2016-sander-w-van-der-laan--swvanderlaan-2-at-umcutrechtnl" class="anchor" href="#copyright-c-2015-2016-sander-w-van-der-laan--swvanderlaan-2-at-umcutrechtnl" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright (c) 2015-2016 Sander W. van der Laan | s.w.vanderlaan-2 [at] umcutrecht.nl</h4>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:   </p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+<p>Reference: <a href="http://opensource.org">http://opensource.org</a>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/swvanderlaan">swvanderlaan</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
